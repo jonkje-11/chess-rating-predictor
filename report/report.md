@@ -12,29 +12,50 @@ Repository: https://github.com/jonkje-11/chess-rating-predictor · Live app: _TO
 
 **Goal.** Build a website where a user submits one chess game (PGN text, a `.pgn` file or a Lichess link), and a machine-learning model estimates the rating of both players **from the game itself**, without seeing their real ratings. Example output: *White ~1650 (±225), Black ~1480 (±225)*. If the input contains the real ratings, they are hidden from the model and shown afterwards for comparison.
 
-**Users and use.** Club players and online players who want a strength estimate for a game played without a rating (over-the-board casual games, games against friends, games from another site), coaches who want a quick read on an unknown student, and curious players who want to test whether "the moves give away the rating". The estimate is meant as an indication, not an official rating.
+**Users.** Players who want a strength estimate for an unrated game (casual over-the-board games, games on other sites), coaches assessing an unknown student, and curious players. The estimate is an indication, not an official rating.
 
-**How it is done today.** Ratings come from rating systems (Elo, Glicko-2) that use only *results* over many games, never the content of a game. Estimating strength from the moves is done informally by experienced players or coaches, who look at opening knowledge, tactical mistakes and time use; this needs expertise and is subjective. A related public challenge is the Kaggle competition *Finding Elo* (Kaggle, n.d.), where both players' Elo had to be predicted from a single game. Research such as Maia (McIlroy-Young et al., 2020) shows that move choices differ systematically between skill levels on Lichess, which supports the idea that a game carries a skill signal.
+**Existing solutions.** Official ratings (Elo, Glicko-2) use only *results* over many games, never the content of a game. Without ML, experienced players and coaches judge strength by eye from opening knowledge, blunders and time use; this needs expertise and is subjective. Related products and research:
 
-**Why machine learning.** The signal is spread over many weak indicators (time use, opening choice, material swings, game length) whose combination is hard to write down as rules, while millions of labelled examples (games with ratings) are freely available. This is a textbook supervised regression setting.
+- **Chess.com Game Review** shows an estimated rating for one game, derived from engine accuracy (mistakes, centipawn loss). It is proprietary, needs a full engine analysis and only works inside Chess.com (Chess.com, n.d.).
+- **"Guess the Elo" games** (e.g. *Guess The Elo* on itch.io, built on Lichess games) turn the same task into a quiz for humans, showing the demand for it but offering no automatic estimate.
+- **Research.** The Kaggle competition *Finding Elo* (Kaggle, n.d.) posed this exact task. Tijhuis et al. (2023) classified rating brackets from 30 hand-crafted features of a single game (79.3% accuracy for the extreme brackets). Omori and Tadepalli (2024) trained a CNN-LSTM on moves and clock times of over one million Lichess games and report an MAE of 182 rating points. Maia (McIlroy-Young et al., 2020) shows that move choices differ systematically between skill levels.
 
-**"Business" objective.** For a free tool, the objective is a credible estimate that users find useful and come back to: estimates should usually be within one rating "class" (about ±200–250 points) and never wildly off for typical players. The product also has an educational purpose: showing what a single game can and cannot reveal.
+Our niche is a free, open and explainable tool that works on any PGN without an engine, using classical models from the course. The published deep-learning result (182) is a useful reference point, although it is not directly comparable: it uses different data, several time controls and a far larger model.
 
-**System components.** The system is a pipeline: (1) `download.py` streams and filters games from the Lichess database, (2) `features.py` turns a game into features, (3) `dataset.py` builds training rows and the split, (4) `train.py`/`evaluate.py` train, tune and evaluate models, and (5) `predict.py` + a Gradio app serve predictions. Changes propagate: a new filter changes the training distribution; a feature change requires rebuilding the dataset *and* retraining, and the app must use the identical feature code. That is why one module (`features.py`) is shared by training and the app, and why the model file stores the expected feature columns.
+**Why machine learning.** The signal is spread over many weak indicators (time use, opening choice, material swings) that are hard to combine by hand-written rules, while millions of labelled games are freely available: a textbook supervised regression setting.
 
-**Resources.** One student, a laptop (16 cores, no GPU), roughly one to two weeks of work, free hosting on Hugging Face Spaces, and free CC0 data. No paid compute was needed.
+**"Business" objective.** A credible free estimate that users find useful: usually within about ±200–250 points, and never wildly off for typical players. It also has an educational purpose: showing what one game can and cannot reveal.
+
+**System components.** A pipeline: download → features → dataset/split → train/evaluate → prediction backend + web app. Changes propagate: a new filter changes the training distribution, and a feature change requires rebuilding the dataset, retraining *and* identical feature code in the app. That is why one module (`features.py`) is shared by training and the app.
+
+**Resources.** One student, a laptop (16 cores, no GPU), roughly one to two weeks of work, free hosting and free CC0 data. No paid compute was needed.
+
+**Framing alternatives.** Rating could also be framed as *classification* into rating brackets (as in Tijhuis et al., 2023). We chose **regression**, because ratings are ordered and continuous, a bracket model treats "off by one bracket" and "off by four" as equally wrong, and a regression estimate with an error margin is more informative for users.
 
 ### Metrics
 
-- **ML metrics.** Mean absolute error (MAE) in rating points is the primary metric because it is directly interpretable for users ("off by 225 points on average") and is the quantity shown as ± in the app. RMSE (penalises large misses) and R² (share of variance explained) are reported alongside.
-- **Software metrics.** Prediction latency per request in the app (target: well under one second on free CPU hardware) and model file size (must be small enough to commit and load in a free Space).
+- **ML metrics.** Mean absolute error (MAE) in rating points is primary: it is directly interpretable ("off by 225 points on average") and is shown as ± in the app. RMSE (penalises large misses) and R² are reported alongside.
+- **Software metrics.** Prediction latency (target: well under one second on free CPU hosting) and model file size (small enough to commit).
 - **Minimal success criterion.** The model must clearly beat the `DummyRegressor` baseline that predicts the mean rating; we set the bar at **at least 15% lower test MAE** than the baseline, measured on games and (separately) on players the model has never seen. _(TODO: confirm this threshold is the one you want to state.)_
 
 ## 2: Data
 
 **Source and licence.** Games come from the Lichess open database (Lichess, 2026a), monthly files of all rated standard games, released under CC0. We use **September 2026**. A month is about 29 GB compressed (~90 million games), so the file is **never downloaded**: `download.py` streams it over HTTP, decompresses with `zstandard` on the fly, filters on header text, and stops after 250,000 kept games (about 180 MB transferred, 93 seconds).
 
-**Labels.** The target is each player's Lichess **blitz rating** at the time of the game (`WhiteElo`/`BlackElo` headers). Lichess uses Glicko-2: new players start at 1500 with a large uncertainty, and a rating is shown as provisional while the rating deviation is above 110 (Lichess, 2026b). The labels are therefore noisy: a new account's rating can be hundreds of points from its true strength, and ratings move after every game. This label noise puts a floor under any achievable error.
+**Data needed and wanted.** The minimum is many games with both the full move list and both players' ratings, from one rating pool and one time control (ratings differ between sites and time controls). Desirable extras were clock times (time use is a strong skill signal), engine evaluations, a recent period (current rating pool) and a licence that allows publishing a derived model and sample data.
+
+**Sources considered:**
+
+| Source | Pros | Cons |
+|---|---|---|
+| **Lichess open database** (chosen) | Every rated game; CC0 licence; clock times; ~10% with engine evals; monthly updates | Very large files (solved by streaming) |
+| Chess.com Published-Data API | Large player base | Only per-player monthly archives (sampling would be biased toward chosen players and slow); IP/branding restrictions (Chess.com, n.d.) |
+| Kaggle "Chess Game Dataset (Lichess)" | Ready-made, CC0 | Only ~20,000 games from selected users; no clock times; mixed time controls |
+| Over-the-board databases (e.g. FIDE events) | Official FIDE ratings | Mostly titled/strong players (narrow rating range); no clock data; unclear licences |
+
+The Lichess database meets every requirement and the licence permits everything we need.
+
+**Labels.** The target is each player's Lichess **blitz rating** at the time of the game (`WhiteElo`/`BlackElo` headers). Lichess uses Glicko-2: new players start at 1500 with high uncertainty, and ratings are provisional while the rating deviation exceeds 110 (Lichess, 2026b). Labels are therefore noisy (a new account can be hundreds of points from its true strength), which puts a floor under any achievable error.
 
 **Filtering** (counts logged by `download.py`):
 
@@ -114,11 +135,11 @@ HGB is best on validation and reduces MAE by **23%** relative to the mean baseli
 
 CV MAE varied only between 226.1 and 235.6 across the candidates. The best setting has few leaves (16) and strong L2 regularisation (4.3), i.e. a *simpler* model. It matches the default model's test MAE (224.8 vs. 224.7) with less overfitting (train MAE 216.7 vs. 209.1) and a smaller file. We deploy it for that reason. In bias–variance terms, the remaining error is mostly **bias / irreducible noise**, not variance, so more tuning has little to gain.
 
-**Learning curve.** We trained the tuned HGB and Ridge on 10k–200k training games (all training games = 200k) and evaluated on the same test set. HGB improves from MAE 235.1 (10k games) to 228.4 (50k) and 224.8 (200k): each doubling of data now gains only about 1.5–2.5 points, and the gap between training and test error shrinks from 57 to 8 points, so the model is no longer variance-limited. Ridge is flat at about 235 with training error equal to test error, the signature of a high-bias model. This justifies using 250k games instead of the full 90 million per month: more data would buy at most a few points, while better *information per game* (see set B below) buys much more.
+**Learning curve.** Tuned HGB and Ridge were trained on 10k–200k training games (200k = all) and evaluated on the same test set. HGB improves from MAE 235.1 (10k) to 228.4 (50k) and 224.8 (200k); each doubling now gains only 1.5–2.5 points, and the train–test gap shrinks from 57 to 8 points, so the model is no longer variance-limited. Ridge is flat at about 235 with train error equal to test error: a high-bias model. This justifies 250k games instead of 90 million: more data buys a few points, while better *information per game* (set B below) buys much more.
 
 ![Learning curve](figures/learning_curve.png)
 
-**Generalisation to unseen players.** In the main split, 89.8% of test rows belong to players who also have (other) games in training. Usernames are not features, but a player's style could still be memorised indirectly. We therefore re-split so that 20% of usernames are held out entirely. Trained on 320,312 rows without any game involving a held-out player and evaluated on 99,841 rows of those players, the model reaches MAE **224.8** (R² 0.39), the same as on the standard split. The model has not memorised individual players; it generalises to new ones.
+**Generalisation to unseen players.** In the main split, 89.8% of test rows belong to players with other games in training, so a player's style could be memorised indirectly. We therefore held out 20% of usernames entirely (320,312 training rows without any of their games; 99,841 test rows of those players). MAE is **224.8** (R² 0.39), the same as on the standard split: the model generalises to new players.
 
 **Error analysis.** Error depends strongly on the true rating and shows clear **regression toward the mean**:
 
@@ -152,19 +173,14 @@ When the evidence is weak, the MAE-minimising answer is close to the population 
 
 Engine features lower MAE by about 20 points (7.5%) at equal training size and raise R² from 0.42 to 0.51: move *quality* carries information that clocks and material cannot. (Errors are higher on this subset than overall because games that were analysed by an engine have a wider rating spread.) The deployed app still uses set A, because most submitted games have no evaluations and computing them would require running Stockfish on the server, but this is the most promising improvement.
 
-**Limitations.**
-- One game is limited evidence.
-- The labels are noisy (provisional ratings).
-- The sample covers seven hours of one day.
-- The model only knows Lichess blitz: ratings from other sites or time controls are on different scales.
-- Very short or unusual games (e.g. an early resignation) give the least information.
+**Limitations.** One game is limited evidence; labels are noisy; the sample covers seven hours of one day; and the model only knows Lichess blitz, so ratings from other sites or time controls are on different scales.
 
 ## 4: Deployment
 
 **Architecture.**
-- **App:** a Gradio app (`app/app.py`) with a custom theme and CSS, hosted on Hugging Face Spaces (free CPU). The repository itself is the Space, configured through the YAML block in `README.md`.
+- **App:** a web app with a custom theme, hosted for free. _(TODO: update after moving the UI to Streamlit Community Cloud; Hugging Face now requires a paid plan for Gradio Spaces.)_
 - **Inputs:** three tabs for pasting a PGN, uploading a file, or giving a Lichess URL/ID. For a link, the game is fetched from the Lichess export API (`/game/export/{id}?clocks=true`), with clear messages for unknown games, rate limiting (HTTP 429) and network errors.
-- **Separation:** all ML logic is in `src/predict.py` (`predict_pgn(pgn) -> dict`, plain JSON data). The UI only formats the output, so it can later be replaced (e.g. a custom Tailwind page or a frontend on Vercel calling the Space's API) without touching the model.
+- **Separation:** all ML logic is in `src/predict.py` (`predict_pgn(pgn) -> dict`, plain JSON data); the UI only formats the output, so it can be replaced without touching the model.
 
 **What happens on a request.**
 1. Strip rating and identity headers, keeping the true values aside.
@@ -181,29 +197,28 @@ The **± interval is the test-set MAE** (225 points) rather than a guessed numbe
 - the distribution of predictions and of input features (e.g. share of games without clocks, unknown ECO codes);
 - whenever true ratings are available in the input, the live MAE against the true ratings, which is a free source of labelled feedback.
 
-Retraining is a single command per month (`download → dataset → train → evaluate`), and the pinned `requirements.txt` and fixed seeds make it reproducible.
+Retraining on a newer month is four commands; pinned versions and fixed seeds make it reproducible.
 
 **Planned improvements.**
 - A quantile model for honest, rating-dependent intervals.
-- Engine features in the app (running Stockfish server-side), if set B proves worth it.
+- Engine features in the app (running Stockfish server-side), as set B showed a clear gain.
 - Sampling games across the whole month instead of the first hours.
 - Supporting other time controls with separate models.
 
 ## 5: References
 
 - Géron, A. (2022). *Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow* (3rd ed.). O'Reilly. Chapter 2 and Appendix A (Machine Learning Project Checklist).
-- Kaggle (n.d.). *Finding Elo* [competition]. https://www.kaggle.com/c/finding-elo
+- Chess.com (n.d.). *How does Game Review work?* https://support.chess.com/article/364-how-does-the-game-report-analysis-work · *Published-Data API*. https://support.chess.com/en/articles/9650547-published-data-api
+- hieuimba (n.d.). *Guess The Elo* [game]. https://hieuimba.itch.io/guess-the-elo
+- Kaggle (n.d.). *Finding Elo* [competition]. https://www.kaggle.com/c/finding-elo · datasnaek (n.d.). *Chess Game Dataset (Lichess)*. https://www.kaggle.com/datasnaek/chess
 - Lichess (2026a). *Lichess open database* (CC0). https://database.lichess.org/
 - Lichess (2026b). *Frequently asked questions: ratings (Glicko-2, provisional ratings)*. https://lichess.org/faq
 - Lichess (2026c). *chess-openings* (CC0). https://github.com/lichess-org/chess-openings
 - McIlroy-Young, R., Sen, S., Kleinberg, J., & Anderson, A. (2020). Aligning superhuman AI with human behavior: chess as a model system. *Proceedings of KDD '20*. https://arxiv.org/abs/2006.01855
+- Omori, M., & Tadepalli, P. (2024). Chess rating estimation from moves and clock times using a CNN-LSTM. *Computers and Games (CG 2024)*. https://arxiv.org/abs/2409.11506
+- Tijhuis, T., Mavromoustakos Blom, P., & Spronck, P. (2023). Predicting chess player rating based on a single game. *IEEE Conference on Games (CoG)*.
 - Pedregosa, F. et al. (2011). Scikit-learn: Machine learning in Python. *JMLR* 12, 2825–2830.
 - Fiekas, N. *python-chess*. https://github.com/niklasf/python-chess
 - Gradio (2026). https://www.gradio.app/ · Hugging Face Spaces. https://huggingface.co/spaces
 
-**AI usage statement.** Claude Code (Anthropic, Claude Opus 5.5) was used as a coding assistant. It did the following, under the student's direction and review:
-- wrote most of the code, tests, figures and README;
-- drafted this report from the actual outputs of `evaluate.py`;
-- proposed design choices, which the student decided on.
-
-A dated log of what the AI produced is in `report/ai_usage.md`. All numbers in this report come from the scripts in the repository and can be reproduced with the commands in the README.
+**AI usage statement.** Claude Code (Anthropic, Claude Opus 5.5) was used as a coding assistant under the student's direction: it wrote most of the code, tests and figures, proposed design choices that the student decided on, and drafted this report from the actual script outputs. A dated log is in `report/ai_usage.md`; all numbers can be reproduced with the commands in the README.
