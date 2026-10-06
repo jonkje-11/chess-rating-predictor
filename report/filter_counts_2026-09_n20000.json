@@ -1,0 +1,10 @@
+{
+  "month": "2026-09",
+  "n_games": 20000,
+  "seen": 44753,
+  "not_blitz_event": 23952,
+  "kept": 20000,
+  "excluded_termination": 95,
+  "too_short": 642,
+  "base_time_out_of_range": 64
+}
