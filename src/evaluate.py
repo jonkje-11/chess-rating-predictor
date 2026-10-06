@@ -304,8 +304,10 @@ def app_latency(cfg: dict) -> dict:
 def main() -> None:
     cfg = load_config()
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--n", type=int, default=cfg["data"]["n_games"], help="which dataset (games kept), as in train.py")
     p.add_argument("--skip", default="", help="comma list: importance,learning_curve,unseen_players,set_b,latency")
     args = p.parse_args()
+    cfg["data"]["n_games"] = args.n
     skip = {s.strip() for s in args.skip.split(",") if s.strip()}
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     plt.rcParams.update({"font.family": "DejaVu Sans"})

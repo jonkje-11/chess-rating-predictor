@@ -196,6 +196,7 @@ def main() -> None:
 
     # Filter counts go into the report, so they are saved next to it (small, committed).
     counts_path = ROOT / "report" / f"filter_counts_{args.month}_n{args.n}.json"
+    counts_path.parent.mkdir(parents=True, exist_ok=True)
     counts_path.write_text(json.dumps({"month": args.month, "n_games": args.n, **counts}, indent=2))
     log.info("Saved %s and %s", out_path, counts_path)
 
