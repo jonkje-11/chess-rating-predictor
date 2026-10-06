@@ -16,7 +16,10 @@ This is the final project in DAT158 (Machine Learning) at HVL. Deadline: **30 Oc
 - Everything must live in a **public GitHub repository**: code, report, and documentation.
 - **Anyone must be able to reproduce the results and deploy the website** from the README alone.
 - The final product is a **website** that takes user input and returns an ML-based result, preferably **deployed publicly** (we will use Hugging Face Spaces with Gradio).
-- A short **report** documenting the work goes in the repo.
+- A short **report** documenting the work goes in the repo, following the course template (max 3500 words, see §10).
+- The work is done in **groups of 2–3**; the submission on Canvas is a link to the repo.
+- The course follows Géron, *Hands-On Machine Learning* (ch. 2 End-to-End ML Project, **Appendix A: ML Project Checklist**). Use the checklist as a guide for the lifecycle and refer to course concepts (bias/variance, regularization, ensembles, learning curves, random vs. grid search) when justifying decisions.
+- Besides the live deployment, record a short **demo video/screencast** as a backup in case the Space is down when graded.
 - AI coding tools are allowed, but **sources and AI usage must be cited**. Keep a running log in `report/ai_usage.md` of what you (the agent) built, so I can document it honestly.
 
 The grading weight is on the ML process and the reasoning behind decisions, not on frontend polish. Keep the frontend simple and spend effort on correct, well-documented ML.
@@ -162,17 +165,19 @@ chess-rating-predictor/
 
 ## 10. Report skeleton (`report/report.md`)
 
-Create the skeleton with headings and short TODO notes only. **Do not invent results, numbers, or conclusions** — results sections are filled in from actual output of `evaluate.py`. Suggested sections:
+Create the skeleton with headings and short TODO notes only. **Do not invent results, numbers, or conclusions** — results sections are filled in from actual output of `evaluate.py`.
 
-1. Introduction and problem statement (why predict rating from a game; who would use it)
-2. Related work / inspiration (e.g. Kaggle "Finding Elo" competition — verify and cite properly)
-3. Data (source, license, filtering steps with counts, final dataset size, EDA highlights)
-4. Method (row design, features and rationale, leakage prevention, split strategy, models)
-5. Results (model table, learning curve, feature importance, error analysis)
-6. Deployment (architecture, how the app works, link)
-7. Discussion (limitations, what could be improved, ethics/privacy if any)
-8. Conclusion
-9. References and AI usage statement
+The report **must follow the official course template** ("Template DAT158 assignment 2.docx") and stay **under 3500 words**. Title page: project name, group members' names, date. Use exactly these numbered sections (the template's guiding questions are listed so each one gets answered or consciously skipped):
+
+1. **Describe the problem**
+   - *Scope:* goal; why ML is a promising solution; who uses it and how; existing solutions / how it is done today (e.g. Kaggle "Finding Elo" — verify and cite); how a human would do it without ML; "business objective"; system components (download → features → model → app) and how changes in one affect the others; resources needed (compute, people).
+   - *Metrics:* ML metrics (MAE primary, RMSE, R²) and software metrics (prediction latency in the app); how they connect to the objective; the minimal performance for success (e.g. clearly beating the DummyRegressor baseline — define the threshold before seeing results).
+2. **Data** — source, license (CC0), how labels (ratings) are obtained and how accurate/consistent they are (Glicko-2, provisional ratings, rating noise); filtering steps with counts; final dataset size and how much data is needed (learning curve); privacy/ethics (usernames, never used as features); representation, cleaning, feature engineering, scaling; leakage prevention; EDA highlights.
+3. **Modeling** — models explored; baseline (DummyRegressor, optionally a simple non-ML heuristic and a rough human-level estimate if a source exists); all metrics in tables/graphs; learning curve; hyperparameter search; error analysis and feature importance, and how they informed improvements.
+4. **Deployment** — how the model is deployed (Gradio on HF Spaces); how predictions are used; monitoring and maintenance (data drift as the Lichess rating pool changes, retraining on newer months); planned improvements; link to the live site and screenshots.
+5. **References** — all sources (Lichess database, chess-openings, Géron, scikit-learn, Kaggle, etc.) and the AI usage statement.
+
+Place limitations/discussion where the template allows (end of Modeling or Deployment) rather than adding extra top-level sections.
 
 ## 11. How to work
 
