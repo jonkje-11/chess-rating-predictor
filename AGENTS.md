@@ -17,7 +17,7 @@ This is the final project in DAT158 (Machine Learning) at HVL. Deadline: **30 Oc
 - **Anyone must be able to reproduce the results and deploy the website** from the README alone.
 - The final product is a **website** that takes user input and returns an ML-based result, preferably **deployed publicly** (we will use Hugging Face Spaces with Gradio).
 - A short **report** documenting the work goes in the repo, following the course template (max 3500 words, see §10).
-- The work is done in **groups of 2–3**; the submission on Canvas is a link to the repo.
+- The assignment says groups of 2–3; **this project is done solo** (confirm with the lecturer). The submission on Canvas is a link to the repo.
 - The course follows Géron, *Hands-On Machine Learning* (ch. 2 End-to-End ML Project, **Appendix A: ML Project Checklist**). Use the checklist as a guide for the lifecycle and refer to course concepts (bias/variance, regularization, ensembles, learning curves, random vs. grid search) when justifying decisions.
 - Besides the live deployment, record a short **demo video/screencast** as a backup in case the Space is down when graded.
 - AI coding tools are allowed, but **sources and AI usage must be cited**. Keep a running log in `report/ai_usage.md` of what you (the agent) built, so I can document it honestly.
@@ -33,7 +33,7 @@ The grading weight is on the ML process and the reasoning behind decisions, not 
 
 **Critical constraint — file size:** Recent monthly files are tens of GB compressed with ~90 million games. **Never download a full file.** Instead, stream the file over HTTP, decompress on the fly with `zstandard`, parse with `python-chess`, and stop after N games. Codespace disk and memory are limited.
 
-**Dataset size:** Target 200,000–500,000 games after filtering for the final model. Use a small default (e.g. 20,000) during development so iterations are fast. Make N a command-line argument.
+**Dataset size:** The final model uses the **first 250,000 games that pass the filters** in the chosen month (= 500,000 per-player rows). Streaming stops as soon as N is reached. Use a small N (e.g. 20,000) during development so iterations are fast. N is set in `config.yaml` and can be overridden on the command line. Because the monthly file is chronological, these games come from the first day or two of the month — document this as a limitation.
 
 **Use a recent month** (2024 or later) so games include `%clk` clock annotations. A fraction of games also include `%eval` engine evaluations.
 
@@ -181,7 +181,7 @@ Place limitations/discussion where the template allows (end of Modeling or Deplo
 
 ## 11. How to work
 
-- Start by setting up the environment (Python 3.11, virtualenv, pinned `requirements.txt`: `python-chess`, `zstandard`, `requests`, `pandas`, `pyarrow`, `numpy`, `scikit-learn`, `matplotlib`, `joblib`, `pyyaml`, `gradio`, `pytest`, optionally `lightgbm`).
+- Start by setting up the environment (Python 3.13 (matches the local machine; pin the same version on HF Spaces), virtualenv, pinned `requirements.txt`: `python-chess`, `zstandard`, `requests`, `pandas`, `pyarrow`, `numpy`, `scikit-learn`, `matplotlib`, `joblib`, `pyyaml`, `gradio`, `pytest`, optionally `lightgbm`).
 - Build in this order, and verify each step before moving on:
   1. `download.py` working on a small N, with filter counts logged.
   2. `pgn_utils.py` + tests (leakage test included).
