@@ -129,6 +129,8 @@ Include 2–3 example games (from the sample file) as Gradio examples so the dem
 
 Keep the UI simple. No custom frontend framework needed.
 
+**Decision (2026-10-06):** Gradio with a custom theme and CSS (`gr.Blocks`, `gr.themes`, `css=`), hosted on HF Spaces. To keep a later pivot cheap (FastAPI + own Tailwind page, or Astro on Vercel calling the HF Space as an API), all prediction logic lives in `src/predict.py` as a plain function `predict_pgn(pgn: str) -> dict` that returns JSON-serialisable data. `app/app.py` only handles UI and formatting; it must not contain ML or feature logic.
+
 ## 9. Repository structure
 
 ```
