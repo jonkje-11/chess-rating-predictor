@@ -22,8 +22,32 @@ filters:
 
 split:
   test_size: 0.2
+  # Share of the training set held out (grouped by game) to choose between models.
+  validation_size: 0.1
+
+tuning:
+  # Light random search for the best model, grouped CV on the training set only.
+  enabled: true
+  n_iter: 12
+  cv_folds: 3
+  # Search on a subset of training games to keep it cheap; the winner is refit on the full training set.
+  max_games: 100000
+
+evaluation:
+  learning_curve_games: [10000, 25000, 50000, 100000, 200000]
+  permutation_rows: 20000
+  permutation_repeats: 5
+  # Share of usernames held out in the "unseen players" evaluation.
+  player_test_share: 0.2
+  # Engine-eval thresholds for feature set B (centipawn loss per move).
+  eval_thresholds: {inaccuracy: 50, mistake: 100, blunder: 300}
+
+app:
+  # Predictions are clipped to the range of ratings seen in training.
+  min_rating: 400
+  max_rating: 3100
 
 paths:
   models_dir: models
   figures_dir: report/figures
-  tables_dir: report
+  tables_dir: report/tables

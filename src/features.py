@@ -251,3 +251,75 @@ def player_rows(features: dict) -> list[dict]:
 
 
 CATEGORICAL_FEATURES = ["termination", "eco", "eco_group", "own_castle_side", "opp_castle_side"]
+
+
+# ---------------------------------------------------------------------------------------------------
+# Feature set B: engine evaluations from %eval comments (only ~9% of Lichess games have them).
+# Not used by the deployed model; compared against set A in src/evaluate.py.
+# ---------------------------------------------------------------------------------------------------
+
+EVAL_CAP = 1000          # centipawns; mate scores and huge advantages are capped so one move cannot dominate
+EVAL_EARLY_MOVES = 15    # "opening accuracy" = this player's first 15 moves
+DEFAULT_THRESHOLDS = {"inaccuracy": 50, "mistake": 100, "blunder": 300}
+
+
+def extract_eval_features(pgn: str, thresholds: dict[str, int] | None = None,
+                          min_coverage: float = 0.9) -> dict | None:
+    """Centipawn-loss statistics per player, or None if too few moves carry an engine evaluation.
+
+    Loss of a move = (eval before the move - eval after it) from the mover's point of view, floored at 0.
+    Moves are classified by loss: >= blunder, >= mistake, >= inaccuracy (mutually exclusive).
+    """
+    th = thresholds or DEFAULT_THRESHOLDS
+    game = parse_game(pgn)
+    nodes = list(game.mainline())
+    evals = []
+    for node in nodes:
+        score = node.eval()
+        evals.append(None if score is None else
+                     max(-EVAL_CAP, min(EVAL_CAP, score.white().score(mate_score=EVAL_CAP))))
+    if not nodes or sum(e is not None for e in evals) / len(nodes) < min_coverage:
+        return None
+
+    losses: dict[chess.Color, list[float]] = {chess.WHITE: [], chess.BLACK: []}
+    before = 20  # typical engine eval of the starting position
+    for ply, after in enumerate(evals):
+        color = chess.WHITE if ply % 2 == 0 else chess.BLACK
+        if before is not None and after is not None:
+            sign = 1 if color == chess.WHITE else -1
+            losses[color].append(max(0.0, sign * (before - after)))
+        else:
+            losses[color].append(math.nan)
+        before = after
+
+    out = {}
+    for name, color in COLORS.items():
+        lst = losses[color]
+        valid = [x for x in lst if not math.isnan(x)]
+        early = [x for x in lst[:EVAL_EARLY_MOVES] if not math.isnan(x)]
+        late = [x for x in lst[EVAL_EARLY_MOVES:] if not math.isnan(x)]
+        n = len(valid) or 1
+        blunders = sum(x >= th["blunder"] for x in valid)
+        mistakes = sum(th["mistake"] <= x < th["blunder"] for x in valid)
+        inaccuracies = sum(th["inaccuracy"] <= x < th["mistake"] for x in valid)
+        out[name] = {
+            "eval_acpl": mean(valid) if valid else math.nan,
+            "eval_acpl_first15": mean(early) if early else math.nan,
+            "eval_acpl_after15": mean(late) if late else math.nan,
+            "eval_inaccuracies": inaccuracies,
+            "eval_mistakes": mistakes,
+            "eval_blunders": blunders,
+            "eval_blunder_rate": blunders / n,
+            "eval_mistake_rate": mistakes / n,
+        }
+    return out
+
+
+def eval_player_rows(eval_features: dict) -> list[dict]:
+    """Same own_/opp_ layout as `player_rows`, for set B features (white row first)."""
+    rows = []
+    for name, opp in (("white", "black"), ("black", "white")):
+        row = {f"own_{k}": v for k, v in eval_features[name].items()}
+        row.update({f"opp_{k}": v for k, v in eval_features[opp].items()})
+        rows.append(row)
+    return rows
