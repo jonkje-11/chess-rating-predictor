@@ -1,0 +1,29 @@
+# Central configuration. Every script reads this file; CLI flags override single values.
+
+seed: 42
+
+data:
+  # Lichess open database (CC0). The monthly file is ~29 GB, so it is streamed, never downloaded.
+  month: "2026-09"
+  url_template: "https://database.lichess.org/standard/lichess_db_standard_rated_{month}.pgn.zst"
+  # Number of games to KEEP after filtering. Final model: 250000. Use e.g. 20000 while developing.
+  n_games: 250000
+  raw_dir: data/raw
+  processed_dir: data/processed
+  sample_pgn: data/sample/sample_games.pgn
+
+filters:
+  # Blitz only: Event header contains "Blitz" and base time is within this range (seconds).
+  event_keyword: "Blitz"
+  base_time_min: 180
+  base_time_max: 300
+  excluded_terminations: ["Abandoned", "Rules infraction"]
+  min_plies: 20
+
+split:
+  test_size: 0.2
+
+paths:
+  models_dir: models
+  figures_dir: report/figures
+  tables_dir: report

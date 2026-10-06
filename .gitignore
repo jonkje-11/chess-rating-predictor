@@ -7,9 +7,8 @@ venv/
 .ipynb_checkpoints/
 
 # Data (large; reproduce with `make data`)
-data/raw/
-data/processed/
-!data/sample/
+data/raw/*
+data/processed/*
 
 # OS / editor
 .DS_Store
@@ -20,3 +19,7 @@ Thumbs.db
 # Gradio
 .gradio/
 flagged/
+
+# Keep empty folder placeholders
+!data/raw/.gitkeep
+!data/processed/.gitkeep
