@@ -4,6 +4,8 @@ Dette repoet er **første utkast (draft v1)**: en komplett, fungerende versjon g
 
 Spesifikasjonen for prosjektet ligger i [AGENTS.md](AGENTS.md).
 
+> **Viktig: dette repoet er IKKE innleveringsrepoet.** Det er arbeids- og utkastrepo. Når alt er bygget, lages et **nytt, rent repo for innlevering** (se avsnitt 8). Det er det nye repoet som lenkes på Canvas og som Streamlit-appen deployes fra.
+
 ---
 
 ## 1. Kursets krav (fra Canvas, "ML assignment 2: Project work")
@@ -110,3 +112,26 @@ make app             # http://127.0.0.1:7860
 Prøvekjøring: `python -m src.download --n 20000 && python -m src.dataset --n 20000 && python -m src.train --n 20000 --no-tune && python -m src.evaluate --n 20000`.
 
 Ny Claude-økt: be den lese `AGENTS.md` og `CONTEXT.md` først.
+
+## 8. Innleveringsrepo (lages til slutt)
+
+Når prosjektet er ferdig bygget, lages et nytt offentlig repo med bare det som hører til leveransen.
+
+**Skal med:**
+- `src/`, `app/` (Streamlit), `tests/`, `notebooks/01_eda.ipynb` (med output)
+- `config.yaml`, `requirements.txt`, `Makefile`, `.gitignore`, `.gitattributes`, `LICENSE`
+- `data/openings/`, `data/sample/`, `models/model.joblib`
+- `report/report.md` + bare figurer og tabeller som brukes i rapporten
+- `README.md`: hva, hvordan reprodusere, hvordan deploye, **lenke til live-appen** og demovideo
+
+**Skal ikke med:**
+- `CONTEXT.md` (arbeidsnotater)
+- utkastrester, testfiler (20k-kjøringer), dupliserte tabeller, ubrukte figurer
+- `AGENTS.md` og `report/ai_usage.md`: **mitt valg**. De dokumenterer AI-bruken. Tar jeg dem ikke med, må AI-erklæringen i rapporten (APA 7) likevel beskrive ærlig hvor mye AI ble brukt.
+
+**Sjekkliste ved oppretting:**
+- [ ] Nytt repo på GitHub, offentlig, uten README/lisens fra GitHub
+- [ ] Kopier inn filene over, kjør `make test` og en full kjøring for å bekrefte at alt reproduseres fra README
+- [ ] Deploy Streamlit-appen fra **det nye** repoet, legg live-lenken i README og rapport
+- [ ] Bestem hva som skjer med dette utkastrepoet: gjøre det privat, eller la det være offentlig og nevne det i AI-erklæringen (mest transparent)
+- [ ] Lever lenken til det nye repoet på Canvas
