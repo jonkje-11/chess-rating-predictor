@@ -1,0 +1,16 @@
+# Python 3.13. Exact versions so results are reproducible.
+chess==1.11.2
+requests==2.34.2
+zstandard==0.25.0
+pytest==9.1.1
+numpy==2.5.4
+pandas==3.0.6
+pyarrow==26.0.0
+joblib==1.6.0
+scikit-learn==1.9.1
+scipy==1.18.1
+threadpoolctl==3.7.0
+PyYAML==6.0.3
+matplotlib==3.11.2
+streamlit==1.66.1
+ipykernel==7.4.0

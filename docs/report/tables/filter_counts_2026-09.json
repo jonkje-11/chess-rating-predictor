@@ -1,0 +1,9 @@
+{
+  "games_read": 561093,
+  "games_kept": 250000,
+  "skipped": {
+    "not blitz": 301707,
+    "abandoned or rules infraction": 707,
+    "too short": 8679
+  }
+}

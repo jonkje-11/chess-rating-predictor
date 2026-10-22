@@ -1,0 +1,34 @@
+# All project settings in one place. Every script reads this file.
+
+seed: 42  # fixed random seed, so results are the same every run
+
+data:
+  # Lichess month to use. Change this to train on newer games.
+  month: "2026-09"
+  # Number of games to keep. The final model uses 250000; use a small number while developing.
+  n_games: 250000
+  url_template: "https://database.lichess.org/standard/lichess_db_standard_rated_{month}.pgn.zst"
+
+filters:
+  # Blitz by the Lichess formula: base time + 40 x increment, in seconds.
+  blitz_min_seconds: 180
+  blitz_max_seconds: 479
+  min_plies: 20
+  excluded_terminations: ["Abandoned", "Rules infraction"]
+
+split:
+  test_share: 0.2
+
+split:
+  test_share: 0.2
+  validation_share: 0.1  # share of the TRAINING games held back to compare models
+
+tuning:
+  n_iter: 10  # number of random setting combinations to try
+  cv_folds: 3  # cross-validation folds, grouped by game
+
+evaluation:
+  pass_mark: 250  # success criterion: test MAE must be at most this (fixed 2026-10-17)
+  permutation_rows: 20000  # test rows used for feature importance (keeps it fast)
+  permutation_repeats: 3
+  learning_curve_games: [10000, 25000, 50000, 100000, 200000]

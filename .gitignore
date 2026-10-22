@@ -1,0 +1,23 @@
+# Virtual environment
+.venv/
+
+# Data: downloaded and processed files are large and can be recreated
+data/raw/
+data/processed/
+
+# Python and OS clutter
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
+
+# Editor settings (local)
+.vscode/
+
+# Private working files: kept on this Mac, never published
+docs/research/
+docs/report/rapportnotater.md
+docs/report/ai_usage.md
+docs/code_overview.md
+AGENTS.md
+docs/report/skriveguide.md
