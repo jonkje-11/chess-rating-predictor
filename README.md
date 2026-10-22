@@ -4,8 +4,8 @@ Estimate both players' **Lichess blitz rating from a single game**, using only t
 
 Final project in DAT158 Machine Learning Engineering, Western Norway University of Applied Sciences (HVL), autumn 2026.
 
-- **Live app:** _TODO: Streamlit Community Cloud link_
-- **Demo video:** _TODO: link_
+- **Live app:** https://chess-rating-predictor-d9ki9wewfxjdndrfkqec4k.streamlit.app
+  (free hosting: if the app has been idle it may ask you to wake it up, which takes about 30 seconds)
 - **Report:** [docs/report/](docs/report/) _(TODO: file name)_
 
 ## Results
