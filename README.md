@@ -106,7 +106,3 @@ Lichess (29 GB/month) ─stream─▶ download ─▶ dataset ─▶ train ─�
 
 - Games: [Lichess open database](https://database.lichess.org/), released under CC0.
 - Opening names: [lichess-org/chess-openings](https://github.com/lichess-org/chess-openings), CC0 (version in `data/openings/SOURCE.md`).
-
-## Use of AI
-
-AI tools (Claude Code, Anthropic) were used in this project. See the AI statement in the report for what they were used for.
