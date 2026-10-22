@@ -21,7 +21,7 @@ The success criterion (test MAE ≤ 250 and better than the baseline) was set be
 
 ## Quick start
 
-Requires macOS or Linux, `make`, and [uv](https://docs.astral.sh/uv/) (it installs Python 3.13).
+Requires [uv](https://docs.astral.sh/uv/), which installs Python 3.13. On macOS and Linux the steps are short `make` commands; on Windows, see [Windows](#windows) below.
 
 ```bash
 git clone <this repository>
@@ -49,6 +49,26 @@ make all     # about 1 hour in total
 | 4 | `make evaluate` | Test-set results, error analysis, feature importance and the learning curve, saved to `docs/report/`. | ~3 min |
 
 All settings (month, number of games, filters, seed, split shares) are in [config.yaml](config.yaml). To use newer data, change `month`, for example to `"2026-10"`.
+
+## Windows
+
+Windows has no `make`, so run the same steps directly in PowerShell from the project folder. Install uv first:
+`powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
+
+```powershell
+uv python install 3.13
+uv venv --python 3.13 --seed .venv
+.venv\Scripts\python -m pip install -r requirements.txt
+
+.venv\Scripts\python -m pytest              # tests
+.venv\Scripts\streamlit run app/app.py      # the website on http://localhost:8501
+
+# Reproduce every result (about 1 hour), in this order:
+.venv\Scripts\python -m src.download
+.venv\Scripts\python -m src.dataset
+.venv\Scripts\python -m src.train
+.venv\Scripts\python -m src.evaluate
+```
 
 ## Deploy the app
 
