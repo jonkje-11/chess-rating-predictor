@@ -10,7 +10,7 @@ Final project in DAT158 Machine Learning Engineering, Western Norway University 
 
 ## Results
 
-Trained on 250,000 Lichess blitz games from September 2026 and evaluated once on 50,000 games the model never saw (100,000 player rows). MAE = mean absolute error in rating points.
+Trained on 250,000 Lichess blitz games from September 2026 and evaluated on 50,000 games the model never saw (100,000 player rows); the test set was not used to choose the model. MAE = mean absolute error in rating points.
 
 | Model | Test MAE |
 |---|---:|
