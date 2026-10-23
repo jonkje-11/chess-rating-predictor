@@ -6,7 +6,7 @@ Final project in DAT158 Machine Learning Engineering, Western Norway University 
 
 - **Live app:** https://chess-rating-predictor-d9ki9wewfxjdndrfkqec4k.streamlit.app
   (free hosting: if the app has been idle it may ask you to wake it up, which takes about 30 seconds)
-- **Report:** [docs/report/](docs/report/) _(TODO: file name)_
+- **Report (Norwegian):** [docs/report/rapport.md](docs/report/rapport.md)
 
 ## Results
 
