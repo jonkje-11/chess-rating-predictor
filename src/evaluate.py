@@ -143,7 +143,7 @@ def plot_error_by_rating(by_rating):
 
 def feature_importance(model, test, features):
     """How much worse the model gets when one feature is shuffled (permutation importance)."""
-    sample = test.sample(n=CONFIG["evaluation"]["permutation_rows"], random_state=SEED)
+    sample = test.sample(n=min(CONFIG["evaluation"]["permutation_rows"], len(test)), random_state=SEED)
     result = permutation_importance(
         model, sample[features], sample["rating"],
         n_repeats=CONFIG["evaluation"]["permutation_repeats"],
@@ -171,7 +171,9 @@ def learning_curve(model, train, test, features):
     """Train the final model's settings on more and more games and measure the error."""
     game_ids = np.random.default_rng(SEED).permutation(train["game_id"].unique())
     rows = []
-    for n_games in CONFIG["evaluation"]["learning_curve_games"]:
+    available = len(game_ids)
+    sizes = [n for n in CONFIG["evaluation"]["learning_curve_games"] if n < available] + [available]
+    for n_games in sizes:
         subset = train[train["game_id"].isin(game_ids[:n_games])]
         fitted = clone(model).fit(subset[features], subset["rating"])
         rows.append({

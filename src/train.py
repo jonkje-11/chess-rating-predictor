@@ -128,7 +128,7 @@ def main():
         results.append({"model": name, **result, "seconds": seconds})
         print(f"{name}: MAE {result['MAE']:.0f} ({seconds} s)")
 
-        print("Tuning gradient boosting (this takes a few minutes)...")
+    print("Tuning gradient boosting (this takes a few minutes)...")
     search = tune_boosting(fit, features, numeric)
     tuned = scores(val["rating"], search.best_estimator_.predict(val[features]))
     print("Best settings:", search.best_params_)

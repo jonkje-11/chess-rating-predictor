@@ -48,12 +48,35 @@ make all     # about 1 hour in total
 | 3 | `make train` | Compares a baseline, Ridge, random forest and gradient boosting on a validation split, tunes gradient boosting, saves `models/model.joblib`. | ~10 min |
 | 4 | `make evaluate` | Test-set results, error analysis, feature importance and the learning curve, saved to `docs/report/`. | ~3 min |
 
-All settings (month, number of games, filters, seed, split shares) are in [config.yaml](config.yaml). To use newer data, change `month`, for example to `"2026-10"`.
+All settings (month, number of games, filters, seed, split shares) are in [config.yaml](config.yaml). A run overwrites the data, the model and the files in `docs/report/`, so do quick test runs with few games (e.g. `python -m src.download 2000`) in a separate copy of the project. To use newer data, change `month`, for example to `"2026-10"`.
 
 ## Windows
 
-Windows has no `make`, so run the same steps directly in PowerShell from the project folder. Install uv first:
-`powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
+Windows has no `make`, so run the same steps directly in PowerShell (a standalone PowerShell window or the terminal in VS Code both work).
+
+**1. Install uv** (once per computer):
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+The installer adds uv to your PATH, but only terminals opened afterwards see it. Either close and reopen the terminal (in VS Code, quit VS Code completely and reopen it; a new terminal tab is not enough), or run this in the current terminal:
+
+```powershell
+$env:Path = "$env:USERPROFILE\.local\bin;$env:Path"
+```
+
+Check with `uv --version`.
+
+**2. Go to the project folder.** It must be the folder that contains `README.md` and `requirements.txt`. If you downloaded the ZIP from GitHub instead of cloning, Windows extracts it into a nested folder, so go one level deeper:
+
+```powershell
+cd chess-rating-predictor-main\chess-rating-predictor-main   # ZIP download
+# or: cd <repository folder>                                  # git clone
+ls requirements.txt                                            # should be found
+```
+
+**3. Set up, test and run** (all commands from that folder):
 
 ```powershell
 uv python install 3.13

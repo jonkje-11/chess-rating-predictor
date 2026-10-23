@@ -18,9 +18,6 @@ filters:
 
 split:
   test_share: 0.2
-
-split:
-  test_share: 0.2
   validation_share: 0.1  # share of the TRAINING games held back to compare models
 
 tuning:
